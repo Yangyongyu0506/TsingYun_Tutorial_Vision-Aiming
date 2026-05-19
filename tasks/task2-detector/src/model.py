@@ -29,7 +29,11 @@ def preprocess_mnist_crop(board_crop: ImageLike) -> np.ndarray:
     # normalize values to [0, 1]
     # convert the result to the tensor/array shape expected by your classifier
     # return normalized input array
-    raise NotImplementedError("preprocess_mnist_crop is not implemented")
+    img = cv2.cvtColor(board_crop, cv2.COLOR_BGR2GRAY)
+    img = cv2.resize(img, (28, 28), interpolation=cv2.INTER_AREA)
+    img = img.astype(np.float32) / 255.0
+    return img.reshape(1, 28, 28)
+    # raise NotImplementedError("preprocess_mnist_crop is not implemented")
 
 
 def load_mnist_model(model_path: Path = DEFAULT_MODEL_PATH) -> object:
@@ -37,7 +41,10 @@ def load_mnist_model(model_path: Path = DEFAULT_MODEL_PATH) -> object:
     # Input: model_path.
     # Output: a trained classifier model ready for inference.
     # If you use PyTorch, instantiate the model, load the weights, and switch to eval mode.
-    raise NotImplementedError("load_mnist_model is not implemented")
+    model = torch.load(model_path)
+    model.eval()
+    return model
+    # raise NotImplementedError("load_mnist_model is not implemented")
 
 
 def predict_mnist_digit(model: object, model_input: np.ndarray) -> tuple[int, float]:
@@ -48,7 +55,14 @@ def predict_mnist_digit(model: object, model_input: np.ndarray) -> tuple[int, fl
     # digit = argmax(probabilities)
     # confidence = probabilities[digit]
     # return digit, confidence
-    raise NotImplementedError("predict_mnist_digit is not implemented")
+    with torch.no_grad():
+        input_tensor = torch.from_numpy(model_input).unsqueeze(0)  # Add batch dimension
+        output = model(input_tensor)
+        probabilities = F.softmax(output, dim=1).squeeze(0).numpy()
+        digit = int(np.argmax(probabilities))
+        confidence = float(probabilities[digit])
+    return digit, confidence
+    # raise NotImplementedError("predict_mnist_digit is not implemented")
 
 
 def classify_mnist_digit(board_crop: ImageLike, model_path: Path = DEFAULT_MODEL_PATH) -> tuple[int, float]:
@@ -57,4 +71,8 @@ def classify_mnist_digit(board_crop: ImageLike, model_path: Path = DEFAULT_MODEL
     # model = load_mnist_model(model_path)
     # digit, confidence = predict_mnist_digit(model, model_input)
     # return digit, confidence
-    raise NotImplementedError("classify_mnist_digit is not implemented")
+    model_input = preprocess_mnist_crop(board_crop)
+    model = load_mnist_model(model_path)
+    digit, confidence = predict_mnist_digit(model, model_input)
+    return digit, confidence
+    # raise NotImplementedError("classify_mnist_digit is not implemented")
