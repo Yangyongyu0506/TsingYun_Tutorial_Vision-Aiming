@@ -144,7 +144,7 @@ def detect_bbox(image: ImageLike, threshold: int = 200) -> list[CornerSet]:
     red_mask = cv2.inRange(img, (threshold, 0, 0), (255, 255, 255))
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
     red_mask = cv2.morphologyEx(red_mask, cv2.MORPH_OPEN, kernel)
-    contours, _ = cv2.findContours(red_mask)
+    contours, _ = cv2.findContours(red_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     corner_candidates = []
     for contour in contours:
         if cv2.contourArea(contour) < 100:

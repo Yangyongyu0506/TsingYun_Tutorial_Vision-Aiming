@@ -29,7 +29,17 @@ def preprocess_mnist_crop(board_crop: ImageLike) -> np.ndarray:
     # normalize values to [0, 1]
     # convert the result to the tensor/array shape expected by your classifier
     # return normalized input array
-    img = cv2.cvtColor(board_crop, cv2.COLOR_BGR2GRAY)
+    img = np.asarray(board_crop, dtype=np.uint8)
+    if img.ndim == 3 and img.shape[2] == 3:
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    elif img.ndim == 3 and img.shape[2] == 4:
+        img = cv2.cvtColor(img, cv2.COLOR_RGBA2GRAY)
+    elif img.ndim == 3 and img.shape[2] == 1:
+        img = img[:, :, 0]
+    elif img.ndim != 2:
+        img = np.squeeze(img)
+        if img.ndim != 2:
+            raise ValueError(f"Unsupported crop shape for MNIST preprocessing: {img.shape}")
     img = cv2.resize(img, (28, 28), interpolation=cv2.INTER_AREA)
     img = img.astype(np.float32) / 255.0
     return img.reshape(1, 28, 28)
@@ -41,7 +51,10 @@ def load_mnist_model(model_path: Path = DEFAULT_MODEL_PATH) -> object:
     # Input: model_path.
     # Output: a trained classifier model ready for inference.
     # If you use PyTorch, instantiate the model, load the weights, and switch to eval mode.
-    model = torch.load(model_path)
+    from train import MNISTClassifier
+    state = torch.load(model_path)
+    model = MNISTClassifier()
+    model.load_state_dict(state)
     model.eval()
     return model
     # raise NotImplementedError("load_mnist_model is not implemented")

@@ -29,18 +29,23 @@ class MNISTClassifier(nn.Module): # Implemented
     def __init__(self, input_size: int = 28 * 28, num_classes: int = 10) -> None:
         super().__init__()
         # TODO(student): fill in your custom model architectures
-        self.flatten = nn.Flatten()
-        self.fc1 = nn.Linear(input_size, 128)
-        self.fc2 = nn.Linear(128, 64)
-        self.fc3 = nn.Linear(64, num_classes)
+        # self.flatten = nn.Flatten()
+        # self.fc1 = nn.Linear(input_size, 128)
+        # self.fc2 = nn.Linear(128, 64)
+        # self.fc3 = nn.Linear(64, num_classes)
+        self.net = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(input_size, 128),
+            nn.ReLU(),
+            nn.Linear(128, 64),
+            nn.ReLU(),
+            nn.Linear(64, num_classes)
+        )
         # raise NotImplementedError("MNIST classifier model logic not implemented!")
 
     def forward(self, inputs):
         # TODO(student): fill in your forward process according to your model
-        x = self.flatten(inputs)
-        x = torch.relu(self.fc1(x))
-        x = torch.relu(self.fc2(x))
-        x = self.fc3(x)
+        x = self.net(inputs)
         return x
 
 
