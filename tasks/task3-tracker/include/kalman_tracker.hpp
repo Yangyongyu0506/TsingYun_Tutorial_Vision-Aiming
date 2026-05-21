@@ -32,8 +32,10 @@ public:
 private:
     struct AxisFilter
     {
+        // State
         double position{0.0};
         double velocity{0.0};
+        // P matrix
         double p00{1.0};
         double p01{0.0};
         double p10{0.0};
